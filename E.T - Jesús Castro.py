@@ -1,0 +1,285 @@
+# ==========================================
+#     FUNCIONES DEL MENÚ Y OPERACIONES
+# ==========================================
+
+def leer_opcion():
+    print("\n========== MENÚ PRINCIPAL ==========")
+    print("1. Cupos por tipo de plan")
+    print("2. Búsqueda de planes por rango de precio")
+    print("3. Actualizar precio de plan")
+    print("4. Agregar plan")
+    print("5. Eliminar plan")
+    print("6. Salir")
+    print("=====================================")
+    print()
+    
+    while True:
+        try:
+            opcion = int(input("Ingrese opción: \n"))
+            if 1 <= opcion <= 6:
+                print()
+                return opcion
+            else:
+                print()
+                print("Debe seleccionar una opción válida")
+        except ValueError:
+            print()
+            print("Debe seleccionar una opción válida")
+
+# ==========================================
+
+def cupos_tipo(tipo, planes, inscripciones):
+    tipo_buscar = tipo.lower()
+    total_cupos = 0
+    
+    for codigo, datos_plan in planes.items():
+        if datos_plan[1].lower() == tipo_buscar:
+            total_cupos += inscripciones[codigo][1]
+
+    print()        
+    print(f"El total de cupos disponibles es: {total_cupos}")
+
+# ==========================================
+
+def busqueda_precio(p_min, p_max, planes, inscripciones):
+    encontrados = []
+    
+    for codigo, datos_ins in inscripciones.items():
+        precio = datos_ins[0]
+        cupos = datos_ins[1]
+        
+        if p_min <= precio <= p_max and cupos > 0:
+            nombre = planes[codigo][0]
+            encontrados.append(f"{nombre}--{codigo}")
+            
+    if len(encontrados) > 0:
+        encontrados.sort()
+        print()
+        print(f"Los planes encontrados son: {encontrados}")
+    else:
+        print()
+        print("No hay planes en ese rango de precios.")
+
+# ==========================================
+
+def buscar_codigo(codigo, diccionario):
+    return codigo.upper() in diccionario
+
+# ==========================================
+
+def actualizar_precio(codigo, nuevo_precio, inscripciones):
+    cod_upper = codigo.upper()
+    if buscar_codigo(cod_upper, inscripciones):
+        inscripciones[cod_upper][0] = nuevo_precio
+        return True
+    return False
+
+
+# ==========================================
+#     FUNCIONES DE VALIDACIÓN (OPCIÓN 4)
+# ==========================================
+
+def val_codigo(codigo, planes):
+    if codigo.strip() == "": return False
+    if buscar_codigo(codigo, planes): return False
+    return True
+
+# ==========================================
+
+def val_nombre(nombre):
+    if nombre.strip() == "": return False
+    return True
+
+# ==========================================
+
+def val_tipo(tipo):
+    if tipo.lower() not in ['mensual', 'trimestral', 'anual']: return False
+    return True
+
+# ==========================================
+
+def val_duracion(duracion):
+    if duracion <= 0: return False
+    return True
+
+# ==========================================
+
+def val_sn(respuesta):
+    if respuesta.lower() not in ['s', 'n']: return False
+    return True
+
+# ==========================================
+
+def val_horario(horario):
+    if horario.strip() == "": return False
+    return True
+
+# ==========================================
+
+def val_precio(precio):
+    if precio <= 0: return False
+    return True
+
+# ==========================================
+
+def val_cupos(cupos):
+    if cupos < 0: return False
+    return True
+
+# ==========================================
+
+def agregar_plan(codigo, nombre, tipo, duracion, acceso_piscina, incluye_clases, horario, precio, cupos, planes, inscripciones):
+    cod_upper = codigo.upper()
+    
+    if buscar_codigo(cod_upper, planes):
+        return False
+        
+    bool_piscina = True if acceso_piscina.lower() == 's' else False
+    bool_clases = True if incluye_clases.lower() == 's' else False
+    
+    planes[cod_upper] = [nombre, tipo.lower(), duracion, bool_piscina, bool_clases, horario]
+    inscripciones[cod_upper] = [precio, cupos]
+    
+    return True
+
+# ==========================================
+
+def eliminar_plan(codigo, planes, inscripciones):
+    cod_upper = codigo.upper()
+    if buscar_codigo(cod_upper, planes):
+        del planes[cod_upper]
+        del inscripciones[cod_upper]
+        return True
+    return False
+
+
+# ==========================================
+#           PROGRAMA PRINCIPAL
+# ==========================================
+
+planes = {
+    'F001': ['Plan Básico', 'mensual', 1, False, False, 'libre'],
+    'F002': ['Plan Full', 'mensual', 1, True, True, 'libre'],
+    'F003': ['Plan Estudiante', 'trimestral', 3, False, True, 'tarde'],
+    'F004': ['Plan Senior', 'trimestral', 3, True, False, 'mañana'],
+    'F005': ['Plan Anual Pro', 'anual', 12, True, True, 'libre'],
+    'F006': ['Plan Nocturno', 'mensual', 1, False, True, 'noche'],
+}
+
+inscripciones = {
+    'F001': [14990, 30],
+    'F002': [22990, 10],
+    'F003': [39990, 0],
+    'F004': [35990, 6],
+    'F005': [159990, 2],
+    'F006': [18990, 15],
+}
+
+while True:
+    opcion_elegida = leer_opcion()
+    
+    if opcion_elegida == 1:
+        tipo_ingresado = input("Ingrese tipo de plan a consultar: ")
+        cupos_tipo(tipo_ingresado, planes, inscripciones)
+        
+    elif opcion_elegida == 2:
+        while True:
+            try:
+                p_min = int(input("Ingrese precio mínimo: "))
+                p_max = int(input("Ingrese precio máximo: "))
+                if p_min >= 0 and p_max >= 0 and p_min <= p_max:
+                    busqueda_precio(p_min, p_max, planes, inscripciones)
+                    break
+                else:
+                    print()
+                    print("Valores incorrectos. Deben ser mayores a cero y el mínimo menor o igual al máximo.")
+            except ValueError:
+                print()
+                print("Debe ingresar valores enteros")
+                
+    elif opcion_elegida == 3:
+        while True:
+            codigo = input("Ingrese código del plan: ")
+            try:
+                nuevo_precio = int(input("Ingrese nuevo precio: "))
+                if nuevo_precio > 0:
+                    exito = actualizar_precio(codigo, nuevo_precio, inscripciones)
+                    if exito:
+                        print()
+                        print("Precio actualizado")
+                    else:
+                        print()
+                        print("El código no existe")
+                else:
+                    print()
+                    print("El precio debe ser un entero positivo.")
+            except ValueError:
+                print()
+                print("Debe ingresar valores enteros positivos")
+                
+            resp = input("¿Desea actualizar otro precio (s/n)?: ")
+            if resp.lower() == 'n':
+                break
+                
+    elif opcion_elegida == 4:
+        codigo = input("Ingrese código del plan: ")
+        nombre = input("Ingrese nombre del plan: ")
+        tipo = input("Ingrese tipo (mensual/trimestral/anual): ")
+        
+        try:
+            duracion = int(input("Ingrese duración (meses): "))
+        except ValueError:
+            duracion = 0
+            
+        piscina = input("¿Incluye acceso a piscina? (s/n): ")
+        clases = input("¿Incluye clases grupales? (s/n): ")
+        horario = input("Ingrese horario: ")
+        
+        try:
+            precio = int(input("Ingrese precio: "))
+        except ValueError:
+            precio = 0
+            
+        try:
+            cupos = int(input("Ingrese cupos: "))
+        except ValueError:
+            cupos = -1
+            
+        v1 = val_codigo(codigo, planes)
+        v2 = val_nombre(nombre)
+        v3 = val_tipo(tipo)
+        v4 = val_duracion(duracion)
+        v5 = val_sn(piscina)
+        v6 = val_sn(clases)
+        v7 = val_horario(horario)
+        v8 = val_precio(precio)
+        v9 = val_cupos(cupos)
+        
+        if v1 and v2 and v3 and v4 and v5 and v6 and v7 and v8 and v9:
+            exito = agregar_plan(codigo, nombre, tipo, duracion, piscina, clases, horario, precio, cupos, planes, inscripciones)
+            if exito:
+                print()
+                print("Plan agregado")
+            else:
+                print()
+                print("El código ya existe")
+        else:
+            print()
+            print("Error: Uno o más datos ingresados no cumplen con las validaciones. No se registró el plan.")
+            
+    elif opcion_elegida == 5:
+        codigo = input("Ingrese código del plan: ")
+        exito = eliminar_plan(codigo, planes, inscripciones)
+        if exito:
+            print()
+            print("Plan eliminado")
+        else:
+            print()
+            print("El código no existe")
+            
+    elif opcion_elegida == 6:
+        print()
+        print("=====================================")
+        print("Programa finalizado.")
+        print("=====================================")
+        break
